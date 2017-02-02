@@ -40,6 +40,22 @@ def parse_counted_words(string):
 
 ## (a) Write Python code to determine how many of these paths identify FILES, not directories. Save that number in the variable file_paths_num.
 
+#anything that's a file ends with ".letters"
+
+file1 = open("computer_paths.txt", "r")
+lines = file1.readlines()
+files = []
+for line in lines: 
+    line = line.rstrip()
+    #if the line has the pattern: period (\.), then letters ([a-z]+), this is a file extension
+    if re.search("\.[a-z]+", line):
+        files.append(line)
+
+
+file_paths_num = len(files)
+
+
+
 ## (b) Write Python code to determine how many of these paths are FULL paths, not relative paths. Save that number in the variable full_paths_num.
 
 ## (c) Write Python code to determine how many of these paths describe a Python file saved inside a folder called SI206. Save that number in the variable python_course_paths.
