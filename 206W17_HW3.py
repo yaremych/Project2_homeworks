@@ -20,7 +20,18 @@ import re
 
 ## Write code to define your parse_counted_words function here.
 
-
+def parse_counted_words(string):
+    #regexp to find the pattern --- will return a list of all the correct substrings
+    # "at least one number, then a space, then a non-alphabetic character and/or at least one alphabetic character"
+    results = re.findall('[0-9]+ .[A-Za-z]+', string)
+    if len(results) > 0:
+        last = results[-1]
+        last_lst = last.split()
+        last_tuple = last_lst[0], last_lst[1]
+        return last_tuple
+    else: 
+        return None
+   
 
 
 ## PART 2: 200 points
