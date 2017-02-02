@@ -58,6 +58,18 @@ file_paths_num = len(files)
 
 ## (b) Write Python code to determine how many of these paths are FULL paths, not relative paths. Save that number in the variable full_paths_num.
 
+# anything that is a full path starts with ~ or /
+
+paths = []
+for line in lines: 
+    line = line.rstrip()
+    #if the line starts with (^) the ~ character or the / character
+    if re.search("^[~/]", line):
+        paths.append(line)
+
+full_paths_num = len(paths)
+
+
 ## (c) Write Python code to determine how many of these paths describe a Python file saved inside a folder called SI206. Save that number in the variable python_course_paths.
 
 ## (d) Write Python code to determine how many of these paths describe a Microsoft file (a file that EITHER ends with .docx OR .xlsx, but nothing else counts) where the file name ends in a digit. Save that total in the variable microsoft_files_num.
