@@ -56,7 +56,24 @@ filestring = cachefile.read()
 
 soup = BeautifulSoup(filestring, 'html.parser')
 
-print(soup.title)
+
+all_headlines = soup.find_all(class_="story-heading")
+
+first_ten = all_headlines[:10]
+
+nytimes_headlines = []
+
+for item in first_ten:
+	# if the has a link, only append the text part
+	if item.a:
+		nytimes_headlines.append(item.a.text)
+	# otherwise, append the text part
+	else: 
+		nytimes_headlines.append(item.contents[0])
+
+for h in nytimes_headlines:
+	print(h)
+
 
 
 #####################
@@ -81,7 +98,31 @@ htmldoc = response.text
 
 soup = BeautifulSoup(htmldoc,"html.parser")
 people = soup.find_all("div",{"class":"views-row"})
+
+#x = people[2]
+#print(x.prettify())
+
+#print(x.find("div",{"class":"field-item even", "property":"dc:title"},"h2").text)
+## WOOOOO this is the name!!!!
+
+
+#list1 = x.find_all("div", {"class":"field-item even"})
+## this is a list of all the times that tag shows up, last one is the one we want
+#print(list1[-1].text)
+## YASSS THIS IS RIGHT
+
+
 umsi_titles = {}
+
+for x in people: 
+	name = x.find("div",{"class":"field-item even", "property":"dc:title"},"h2").text
+	list1 = x.find_all("div", {"class":"field-item even"})
+	title = list1[-1].text
+	umsi_titles[name] = title
+
+print(umsi_titles)
+
+
 
 ## It may be helpful to translate the following from English to code:
 
