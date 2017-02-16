@@ -58,32 +58,12 @@ CACHE_FNAME = "twitter_cache.json"
 try:
 	cache_file_obj = open(CACHE_FNAME,'r')
 	cache_contents = cache_file_obj.read()
-	CACHE_DICTION = json.loads(cache_contents)
+	CACHE_DICTION = json.loads(cache_contents) # CACHE_DICTION is the whole contents of the file, in dictionary form
 except:
 	CACHE_DICTION = {}
-	# I know that in my code 
-	# Inside a function that gets data from the internet
-	# I will have to make sure that I properly add data to cache_diction
-	# I will have to make sure that I properly write CACHE_DICTION to a file, so I'll have it next time I run my program
 
 
-## Function to make sure that params always end up in the same order inside the URL
-def canonical_order(d):
-    alphabetized_keys = sorted(d.keys())
-    res = []
-    for k in alphabetized_keys:
-        res.append((k, d[k]))
-    return res
-
-
-## This is the function that actually builds each URL to make a request with, so we can say "Have we made a request with this URL before?" It invokes the  canonical_order function in the process. For requests where we can access the URL, this is a good unique identifier.
-def requestURL(baseurl, params = {}):
-    req = requests.Request(method = 'GET', url = baseurl, params = canonical_order(params))
-    prepped = req.prepare()
-    return prepped.url
-
-
-## Now create a function similar to meaning_relation_caching in the datamuse example --- set up the request, and check if we've made a request with that specific URL before (ie: the exact same params and exact same things passed into the params). If we have, just use the cached data. If not, make a new request and cache that data! 
+## Now create a function similar to meaning_relation_caching in the datamuse example --- set up the request, and check if we've made a request with that specific phrase before. If we have, just use the cached data. If not, make a new request and cache that data! 
 
 ## Let's figure out how to make the necessary request to twitter first: 
 
@@ -92,11 +72,11 @@ def requestURL(baseurl, params = {}):
 # for the first 3 tweets
 
 # Set up library to grab stuff from twitter with your authentication, and return it in a JSON format 
-api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+# api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
-phrase = input("Enter a word or phrase you'd like to see tweets about: ")
+# phrase = input("Enter a word or phrase you'd like to see tweets about: ")
 
-results = api.search(q=phrase)
+# results = api.search(q=phrase)
 
 #print(type(results)) # it is a dictionary
 #print(results.keys()) # keys are 'statuses' and 'search_metadata' (we are probably just interested in the statuses part)
@@ -105,49 +85,63 @@ results = api.search(q=phrase)
 # results['statuses'] gets us to a list; each element in the list represents one tweet, and is a dictionary
 # each tweet dictionary has various keys that hold info about it. we want: ['text'] and ['created_at']
 
-print(results['statuses'][0]['text'])
-print(results['statuses'][0]['created_at'])
+# print(results['statuses'][0]['text'])
+# print(results['statuses'][0]['created_at'])
+# print(results['search_metadata'])
+# print(results['search_metadata']['query'])
 
-# WOOO!
-# now print out that info for the first 3 tweets
+# # WOOO!
+# # now print out that info for the first 3 tweets
 
-for x in range(3):
-	print("\n")
-	print("TEXT: " + results['statuses'][x]['text'])
-	print("CREATED AT: " + results['statuses'][x]['created_at'])
-print("\n")
+# for x in range(3):
+# 	print("\n")
+# 	print("TEXT: " + results['statuses'][x]['text'])
+# 	print("CREATED AT: " + results['statuses'][x]['created_at'])
+# print("\n")
 
-## Now write code so that we can use cached data if possible: 
 
-def twitter_search_caching(phrase):
-	# still need the basics to make a request -- in case!
 
-	#api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+# Now write code so that we can use cached data if possible: 
 
-	# but have to determine what makes this request unique
-	# requestURL takes base url and params dict and composes the URL -- will always be the same with the same info
-	unique_identifier = requestURL(base_url,params_diction)
+phrase = input("Enter a word or phrase you'd like to see tweets about: ")
+
+def twitter_search_caching(phrase=phrase):
+
+	# what makes the request unique --- the phrase! 
+	unique_identifier = phrase
 	## then -- have we seen this unique identifier before in our cache?
+
 	if unique_identifier in CACHE_DICTION:
 		print("using cached data for", unique_identifier)
 		# cool, if so, grab the data that goes with it!
-		python_obj_data = CACHE_DICTION[unique_identifier]
-	else: # if not
+		results = CACHE_DICTION[unique_identifier] # use the key associated w/ the phrase (aka: all the API response data) as the data for the following code! 
+
+	else: 
 		print("getting new data from the web for", unique_identifier)
 		# get data from the internet
-		response = requests.get(base_url,params=params_diction)
-		python_obj_data = json.loads(response.text) # the JSON-formatted string loaded into a python dictionary
+
+		api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+		results = api.search(q=phrase)
+
+
 		# but also! cache the data, so next time we won't have to make a request to the internet, get the same stuff
-		# so,
-		CACHE_DICTION[unique_identifier] = python_obj_data
+		
+		CACHE_DICTION[unique_identifier] = results
 		f = open(CACHE_FNAME,'w') # open our cache file to write
 		f.write(json.dumps(CACHE_DICTION)) # write the JSON-string version of the cache dictionary to the file, which has everything in it
 		f.close() # close up the file for now
+		
 	# now no matter what we got the python object we want in the variable python_obj_data, so let's go ahead w/ what we were doing
-	final_list = []
-	for word_diction in python_obj_data[:3]:
-		final_list.append(word_diction["word"])
-	return final_list
+	
+	for x in range(3):
+		print("\n")
+		print("TEXT: " + results['statuses'][x]['text'])
+		print("CREATED AT: " + results['statuses'][x]['created_at'])
+	print("\n")
+
+
+twitter_search_caching()
+
 
 
 
