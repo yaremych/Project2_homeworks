@@ -145,29 +145,6 @@ for page in CACHE_DICTION['umsi_directory_data']:
 		# add to the dictionary
 		umsi_titles[name] = title
 
-		
-
-
-
-
-# page1 = CACHE_DICTION['umsi_directory_data'][0]
-
-# soup = BeautifulSoup(page1, "html.parser")
-
-# people = soup.find_all("div",{"class":"views-row"})
-# print(people[1].prettify())
-
-# tester = people[1]
-
-# name = tester.find("div",{"class":"field-item even", "property":"dc:title"},"h2").text
-# print(name)
-
-# list1 = tester.find_all("div", {"class":"field-item even"})
-# title = list1[-1].text
-# print(title)
-
-
-
 
 
 
@@ -179,6 +156,36 @@ for page in CACHE_DICTION['umsi_directory_data']:
 ## Behavior: See instructions. Should search for the input string on twitter and get results. Should check for cached data, use it if possible, and if not, cache the data retrieved.
 ## RETURN VALUE: A list of strings: A list of just the text of 5 different tweets that result from the search.
 
+def get_five_tweets(string):
+
+	unique_identifier = "twitter_" + string
+
+	if unique_identifier in CACHE_DICTION:
+		# used cached data
+		print("Using cached data for", string)
+		return CACHE_DICTION[unique_identifier]
+
+	else: 
+		# make a request
+		print("Getting data from the web for", string)
+
+		api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+		results = api.search(q=string)
+
+		# get the text data from the first 5 tweets and append them to a list
+		list1 = []
+
+		for i in range(5):
+			list1.append(results['statuses'][i]['text'])
+
+		return list1
+
+		# cache the data
+		CACHE_DICTION[unique_identifier] = list1
+
+		f = open(CACHE_FNAME,'w')
+		f.write(json.dumps(CACHE_DICTION))
+		f.close()
 
 
 
