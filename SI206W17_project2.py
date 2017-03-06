@@ -69,9 +69,9 @@ def find_urls(string):
 
 	return results
 
-print(find_urls("http://www.google.com is a great site"))
-print(find_urls("I love looking at websites like http://etsy.com and http://instagram.com and stuff"))
-print(find_urls("the internet is awesome #worldwideweb"))
+#print(find_urls("http://www.google.com is a great site"))
+#print(find_urls("I love looking at websites like http://etsy.com and http://instagram.com and stuff"))
+#print(find_urls("the internet is awesome #worldwideweb"))
 
 
 
@@ -85,14 +85,88 @@ print(find_urls("the internet is awesome #worldwideweb"))
 ## Start with this page: https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All  
 ## End with this page: https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All&page=11 
 
+def get_umsi_data():
+
+	if 'umsi_directory_data' in CACHE_DICTION:
+		print("Using cached data from UMSI Directory")
+		return CACHE_DICTION['umsi_directory_data']
 
 
+	else: 
+		print("Getting data from the web for UMSI Directory")
+		list1 = []
+
+		# first request has no page number appended on end:
+		base_url = "https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All"
+		response = requests.get(base_url, headers={'User-Agent': 'SI_CLASS'}) 
+		html_string = response.text
+		list1.append(html_string)
+
+		# all subsequent have a number appended: 
+		for i in [1,2,3,4,5,6,7,8,9,10,11]:
+			new_base_url = 'https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All&page=' + str(i)
+
+			new_response = requests.get(new_base_url, headers={'User-Agent': 'SI_CLASS'})
+			new_html_string = new_response.text
+
+			list1.append(new_html_string)
+
+		# cache the list, write it into the file
+		CACHE_DICTION['umsi_directory_data'] = list1
+
+		f = open(CACHE_FNAME, 'w')
+		f.write(json.dumps(CACHE_DICTION))
+		f.close()
+
+
+		return list1
 
 
 
 
 ## PART 2 (b) - Create a dictionary saved in a variable umsi_titles 
 ## whose keys are UMSI people's names, and whose associated values are those people's titles, e.g. "PhD student" or "Associate Professor of Information"...
+
+# make everything into a BeautifulSoup object
+
+umsi_titles = {}
+
+# iterate through each page in the list
+for page in CACHE_DICTION['umsi_directory_data']:
+	soup = BeautifulSoup(page, "html.parser")
+	people = soup.find_all("div",{"class":"views-row"})
+
+	# iterate through each person on the page
+	for person in people:
+		name = person.find("div",{"class":"field-item even", "property":"dc:title"},"h2").text
+		list1 = person.find_all("div", {"class":"field-item even"})
+		title = list1[-1].text
+
+		# add to the dictionary
+		umsi_titles[name] = title
+
+		
+
+
+
+
+# page1 = CACHE_DICTION['umsi_directory_data'][0]
+
+# soup = BeautifulSoup(page1, "html.parser")
+
+# people = soup.find_all("div",{"class":"views-row"})
+# print(people[1].prettify())
+
+# tester = people[1]
+
+# name = tester.find("div",{"class":"field-item even", "property":"dc:title"},"h2").text
+# print(name)
+
+# list1 = tester.find_all("div", {"class":"field-item even"})
+# title = list1[-1].text
+# print(title)
+
+
 
 
 
